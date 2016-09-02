@@ -1,0 +1,50 @@
+;////////////////////////////////////////////
+; Params for the gyro model of Paulo Simoes	
+;////////////////////////////////////////////				
+
+	anor=7.8966100e+30
+	freq_model=10^interpol(alog10([0.01,20]*1e9),50)
+	rsun = 6.9e10	    ; cm
+	Lradio = 0.3*rsun
+
+	cd,'~/idl/gyro/'
+	gyro, freq_model, flux_model, $
+		bmag=3.6, $
+		size=200, $
+		hei=Lradio, $
+		nel=2.1e6, $
+		np=1.6e8, $
+		delta=3.1, $;,nel=4e4 $
+		ener=[10., 6500.0], $
+		anor=anor, $
+		angle=80.0;
+
+
+		;----------------------------------------------------;
+		; These values provide a moderately good fit by eye. 
+		; Razin supression. Source sizes VERY small.
+		;bmag=14.0, $
+		;size=25, $
+		;hei=Lradio, $
+		;nel=1e6, $
+		;np=6.6e8, $
+		;delta=3.2, $;,nel=4e4 $
+		;ener=[30., 3500.0], $
+		;anor=anor, $
+		;angle=70.0, $
+		;m=145, $
+		;alpha=1.0
+
+		;----------------------------------------------------;
+		; These values provide a moderately good fit by eye.
+		; No Razin supression.
+		;bmag=3.6, $
+		;size=500, $
+		;hei=Lradio, $
+		;nel=210090.16, $
+		;np=1.6e8, $
+		;delta=3.1, $;,nel=4e4 $
+		;ener=[10., 6000.0], $
+		;anor=anor, $
+		;angle=80.0;
+		;----------------------------------------------------;
