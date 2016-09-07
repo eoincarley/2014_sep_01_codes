@@ -22,7 +22,7 @@ pro rstn_sh_flux_spect_20140901
 	pos = [0.15, 0.15, 0.88, 0.88]
 
 	rstn_folder = '~/Data/2014_sep_01/radio/rstn/'
-	rstn_file = findfile(rstn_folder+'*sag*.sav')
+	rstn_file = findfile(rstn_folder+'*sag-hill*.sav')
 	restore, rstn_file[0], /verb
 	rstn_times = anytim(rstn_time, /utim)
 

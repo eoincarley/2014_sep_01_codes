@@ -23,13 +23,13 @@ pro rstn_flux_density_oplot_20140901
 	pos = [0.15, 0.15, 0.88, 0.88]
 
 	rstn_folder = '~/Data/2014_sep_01/radio/rstn/'
-	rstn_file = findfile(rstn_folder+'*.sav')
+	rstn_file = findfile(rstn_folder+'*san-vito*.sav')
 
 	time0 = anytim('2014-09-01T10:55:00', /utim)
 	time1 = anytim('2014-09-01T11:05:00', /utim)
 	
-	time0bg = anytim('2014-09-01T10:00:00', /utim)
-	time1bg = anytim('2014-09-01T10:50:00', /utim)
+	time0bg = anytim('2014-09-01T10:53:00', /utim)
+	time1bg = anytim('2014-09-01T10:56:00', /utim)
 	
 	date_string = time2file(time0, /date)
 
@@ -69,10 +69,6 @@ pro rstn_flux_density_oplot_20140901
 	freq_1415 = freq_1415-backgnd_1415
 	freq_2695 = freq_2695-backgnd_2695
 	freq_4995 = freq_4995-backgnd_4995
-	
-	freq_1415 = freq_1415 + abs(mean(freq_1415[0:100]))
-	freq_2695 = freq_2695 + abs(mean(freq_2695[0:100]))
-	freq_4995 = freq_4995 + abs(mean(freq_4995[0:100]))
 
 	smoothing = 10
 	freq_1415 = smooth(freq_1415, smoothing, /edge_mirror)
@@ -97,6 +93,29 @@ pro rstn_flux_density_oplot_20140901
 	print, 'Time of 1415 max: '+anytim(rstn_time[index_max0], /cc)+' UT'
 	print, 'Time of 2695 max: '+anytim(rstn_time[index_max1], /cc)+' UT'
 	print, 'Time of 4995 max: '+anytim(rstn_time[index_max2], /cc)+' UT'
+
+	;-------------------------------------------;
+	;				Sag hill
+	;
+	rstn_folder = '~/Data/2014_sep_01/radio/rstn/'
+	rstn_file = findfile(rstn_folder+'*sag-hill*.sav')
+	restore, rstn_file[0], /verb
+	rstn_times = anytim(rstn_time, /utim)
+
+	time0 = anytim('2014-09-01T10:50:00', /utim)
+	time1 = anytim('2014-09-01T11:04:30', /utim)
+
+	time0bg = anytim('2014-09-01T10:53:00', /utim)
+	time1bg = anytim('2014-09-01T10:55:00', /utim)
+	
+	backgnd_610 = mean(freq_610[where(rstn_times ge time0bg and rstn_times le time1bg)])	
+	freq_610 = freq_610[where(rstn_times ge time0 and rstn_times le time1)]
+	rstn_times = rstn_times[where(rstn_times ge time0 and rstn_times le time1)]
+	freq_610 = freq_610-backgnd_610
+	smoothing = 10
+	freq_610 = smooth(freq_610, smoothing, /edge_mirror)
+	
+	outplot, rstn_times, freq_610, color=9, linestyle=2, thick=4				
 
 
 
@@ -188,10 +207,10 @@ pro nrh_orfees_rstn_flux_plot_20140901, postscript=postscript
 
 		axis, yaxis=0, yr=nrh_y_range, /ylog, yticklen = -0.018, /ys, ytitle='Flux Density (SFU)'	
 
-		legend, ['NRH '+freq_string+' MHz', 'Orfees '+orf_frequency_str+' MHz', 'RSTN 1415 MHz', 'RSTN 2695 MHz', 'RSTN 4995 MHz'], $
-				linestyle = [0, 0, 0, 0, 0], $
-				color=[0, 5, 6, 7, 4], $
-				thick=[3,4, 3, 3, 3], $
+		legend, ['NRH '+freq_string+' MHz', 'Orfees '+orf_frequency_str+' MHz', 'RSTN 615 MHz','RSTN 1415 MHz', 'RSTN 2695 MHz', 'RSTN 4995 MHz'], $
+				linestyle = [0, 0, 2, 0, 0, 0], $
+				color=[0, 5, 9, 6, 7, 4], $
+				thick=[3, 4, 4, 3, 3, 3], $
 				box=0, $
 				/bottom, $
 				/right		

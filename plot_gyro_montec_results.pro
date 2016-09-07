@@ -46,7 +46,7 @@ pro plot_gyro_montec_results, postscript=postscript
 	!p.charsize=2.8
 	set_line_color
 	window, 0, xs=500*(3/1.), ys=500
-	plothist_new, Bfield, bin=0.1, xr=[0.5, 6.0], color=0, $
+	plothist_new, Bfield, bin=0.2, xr=[0.5, 6.0], color=0, $
 		xtitle='Magnetic field strength (G)', $
 		ytitle='Number of results'
 
@@ -62,14 +62,14 @@ pro plot_gyro_montec_results, postscript=postscript
 	xyouts, 0.40, 0.87, 'Sdev: '+string(stdev(Nel), format='(e8.1)')+' cm!U-3!N', color=3, /normal, charsize=1.5
 
 	;----------------------------------------------------;	
-	plothist_new, delta, bin=0.019, xr=[3.0, 3.2], color=0, $
+	plothist_new, delta, bin=0.019, xr=[3.0, 3.5], color=0, $
 		xtitle='Electron spectral index', $
 		ytitle='Number of results'
 
 	xyouts, 0.73, 0.90, 'Mean: '+string(mean(delta), format='(f4.2)'), color=3, /normal, charsize=1.5
 	xyouts, 0.73, 0.87, 'Sdev: '+string(stdev(delta), format='(f4.2)'), color=3, /normal, charsize=1.5
 	
-	stop
+
 	;----------------------------------------------------;	
 	;plothist_new, Np, bin=0.5e7, xr=[1e8, 2e8], color=0, $
 	;	xtitle='Thermal electron densitu (cm!U-3!N)', $
@@ -126,7 +126,7 @@ pro plot_gyro_montec_results, postscript=postscript
 	params_total = [ [params_total], [START_VALUES] ]
 	restore, folder+file4, /verb
 	params_total = [ [params_total], [START_VALUES] ]
-
+	params_start=params_total
 	B_start = params_total[0, *]		; Gauss
 	Nel_start = 10^params_total[1, *]		; cm^-3
 	Np_start = 10^params_total[2, *]	    ; cm^-3
@@ -136,11 +136,11 @@ pro plot_gyro_montec_results, postscript=postscript
 
 
 	!p.multi=[0, 1, 2]
-	!p.charsize=1.5
+	!p.charsize=1.2
 	set_line_color
-	window, 10, xs=500*(1/1.), ys=500*(2/1.), xp=1950, yp=1000
+	;window, 10, xs=500*(1/1.), ys=500*(2/1.), xp=1950, yp=1000
 
-	cgHistoplot, Bfield, BINSIZE=0.6, xr=[0,6], yr=[0,50], xtitle='B field strength (G)'
+	cgHistoplot, B_start, BINSIZE=0.2, xr=[1,6], yr=[0,50], xtitle='B field strength (G)'
 
 	restore, folder+file1, /verb
 	params_total = PARMS_AVGS
@@ -161,8 +161,8 @@ pro plot_gyro_montec_results, postscript=postscript
 	set_line_color
 	cgHistoplot, B, BINSIZE=0.2, /oplot, color=5, POLYCOLOR='sky blue'
 
-	plot, [1,6], [2.5, 5.0], /nodata, $
-		color=0, xtitle='B field start (G)', ytitle='B field fit (G)', $
+	plot, [1,6], [1, 6], /nodata, $
+		color=0, xtitle='Initial B-field (G)', ytitle='Fit B-field (G)', $
 		/xs, /ys
 
 	plotsym, 0
@@ -173,11 +173,36 @@ pro plot_gyro_montec_results, postscript=postscript
 			color=5
 
 
+	B = B[where(B gt 3.5)]
+	B_start = B_start[where(B gt 3.5)]		
+
 	if keyword_set(postscript) then begin
 		device, /close
 		spawn,'open ~/Data/2014_sep_01/radio/gyro_fits/'
 		set_plot, 'x'
 	endif			
+
+	cov_matrix = fltarr(n_elements(params_start[*,0]), n_elements(params_total[*,0]))
+	for i=0, n_elements(cov_matrix[*, 0])-1 do begin
+		for j=0, n_elements(cov_matrix[0, *])-1 do begin
+			
+			cov_matrix[i, j] = correlate(params_start[i, *], params_total[j, *])
+		
+		endfor
+
+	endfor
+
+	for i=0, n_elements(cov_matrix[*, 0])-1 do begin
+		print,  ' & '+string(cov_matrix[0, i], format='(f5.2)') + $
+				' & '+string(cov_matrix[1, i], format='(f5.2)') + $
+				' & '+string(cov_matrix[2, i], format='(f5.2)') + $
+				' & '+string(cov_matrix[3, i], format='(f5.2)') + $
+				' & '+string(cov_matrix[4, i], format='(f5.2)') + $
+				' & '+string(cov_matrix[5, i], format='(f5.2)') + '\\'
+
+
+	endfor
+
 
 
 

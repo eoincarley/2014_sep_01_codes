@@ -4,10 +4,10 @@ pro thin_target_e_density
 	F = 1.02D54
 	rsun = 6.9D10	; cm	
 	L = 0.042*rsun
-	Vth = 5e27	;(4./3.)*!pi*L^3.0
-	Vpl = (4./3.)*!pi*(L)^3.0	;1.0*Vth		; N.B Assumes non-thermal volume is the same size as thermal volume.
+	Vth = 1e28	;(4./3.)*!pi*L^3.0
+	Vpl = 1e28	;(4./3.)*!pi*(L)^3.0	;1.0*Vth		; N.B Assumes non-thermal volume is the same size as thermal volume.
 	n0 = sqrt(EM/Vth)
-	delta_thin = 3.4
+	delta_thin = 3.3
 	E_min = 9.3		; keV
 	E_0 = 9.3
 	e_mass = 0.511e3	;keV/c 

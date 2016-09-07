@@ -3,10 +3,10 @@ pro test_B_nu
 	rsun = 6.9e10	    ; cm
 	Lxray = 0.042*rsun	; Size of the radio source
 	Lradio = 0.5*rsun	; Size of the radio source
-	N =  2138138.8	;0.5*freq_to_dens(150e6)	;1646649.2	;	0.01*freq_to_dens(150e6)	;1.6e7	;0.1*freq_to_dens(150e6);2630812.0;(Lxray/Lradio)*83193586;	2630812.0		;0.064*freq_to_dens(150e6)	;cm^-3
+	N = 3.1e7	;0.5*freq_to_dens(150e6)	;1646649.2	;	0.01*freq_to_dens(150e6)	;1.6e7	;0.1*freq_to_dens(150e6);2630812.0;(Lxray/Lradio)*83193586;	2630812.0		;0.064*freq_to_dens(150e6)	;cm^-3
 	B = dindgen(100)*(100 - 0.01)/99.0 + 0.01
 	alpha_thin = -1.8 ;+ 0.1
-	delta = -1.1*(alpha_thin-1.2)
+	delta = 3.3 ;-1.1*(alpha_thin-1.2)
 	angle=85.0
 	
 	r = 2.72e3*10.0^(0.27*delta)
@@ -26,7 +26,7 @@ pro test_B_nu
 	;	/xlog, $
 	;	/ylog
 
-	B_value = interpol(B, nu, 1.0e9)
+	B_value = interpol(B, nu, 0.99e9)
 	print, 'Magnetic field strength: '+string(B_value)+' G'	
 	print, ' '
 
@@ -52,8 +52,6 @@ pro test_B_nu
 	print, 'Potential energy content of CME: '+string(E_pot)+' erg'
 
 	print, 'Ratio of mechanical to magnetic energy '+string((E_kin + E_pot)/E_mag)
-
-
 
 
 STOP
