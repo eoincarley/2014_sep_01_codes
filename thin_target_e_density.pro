@@ -7,7 +7,7 @@ pro thin_target_e_density
 	Vth = 1e28	;(4./3.)*!pi*L^3.0
 	Vpl = 1e28	;(4./3.)*!pi*(L)^3.0	;1.0*Vth		; N.B Assumes non-thermal volume is the same size as thermal volume.
 	n0 = sqrt(EM/Vth)
-	delta_thin = 3.3
+	delta_thin = 3.0
 	E_min = 9.3		; keV
 	E_0 = 9.3
 	e_mass = 0.511e3	;keV/c 
@@ -22,6 +22,10 @@ pro thin_target_e_density
 	print, 'Non-thermal electron density: '+string(n_b)	;/rsun	
 	print, 'Thermal electron density: '+string(n0)	;/rsun	
 	print, 'Percent electrons in power law tail: '+string((n_b/n0)*100.0) +' %'
+
+
+	test_B_nu, n_b, B_value=B_value 
+	print, B_value
 
 stop
 END

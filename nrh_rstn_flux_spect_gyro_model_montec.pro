@@ -77,7 +77,7 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 	sh_rstn_fluxes = sh_rstn_flux.rstn_flux
 	sh_rstn_freq = sh_rstn_flux.rstn_freq
 
-	start_index = 4		; Only choose frequencies > freq[4]
+	start_index = 5		; Only choose frequencies > freq[4]
 	freq = [nrh_freq, sh_rstn_freq]
 	freq = freq[start_index:n_elements(freq)-1]
 	freq = alog10(freq*1e6)
@@ -97,7 +97,7 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 	start_time_index = closest(nrh_times, anytim('2014-09-01T11:01:40', /utim))
 	stop_time_index = closest(nrh_times, anytim('2014-09-01T11:03:10', /utim))
 	global_iteration = 0.
-	monte_end = 25.
+	monte_end = 25.			; Number of Monte-Carlo test fits.
 	tindex_step = 1.
 	num_iterations = (monte_end)*(stop_time_index - start_time_index + 1.0)/tindex_step
 
@@ -108,20 +108,15 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 	;
 	; 		  Set restrictions.
 	;
-
 	pi[0].step = 1	;Large step sizes in solution space for these params.
-	;pi[1].step = 1
-
 	pi[1].limited(0) = 1
 	pi[1].limits(0) = 5.0
-
+	pi[2].step = 0.1
 	pi[3].step = 1
 	;pi[4].step = 1
 	pi[5].step = 1
 	pi[5].limited(0) = 1
-	pi[5].limits(0) = 10.0	
-
-
+	pi[5].limits(0) = 50.0	
 	
 	for k=0, monte_end-1 do begin
 
@@ -134,15 +129,15 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 		GET_UTC, utc_seed
 		seed = anytim(utc_seed, /utim)	; Use the current time as the seed for the random variable
 		if k eq 0 then begin
-			start = [5.0, 6.0, 8.15, 3.1, 3.84, 80.0] ;start = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0] 
+			start = [3.5, 6.0, 8.15, 3.1, 3.84, 80.0] ;start = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0] 
 		endif else begin 
-			start = [5.0, 6.0, 8.15, 3.1, 3.84, 80.0] 
-			start[0] = start[0] + randomu(seed, 1.0)*5.0 > 0.5 < 8.0
-			start[1] = start[1] + randomu(seed+1., 1.0)/50.0
-			start[2] = start[2] + randomu(seed+2., 1.0)/50.0
-			start[3] = start[3] + randomu(seed+3., 1.0)*2.0
-			start[4] = start[4] + randomu(seed+4., 1.0)/50.0
-			start[5] = start[5] + randomu(seed+5., 1.0)
+			start = [3.5, 6.0, 8.15, 3.1, 3.84, 80.0] 
+			start[0] = start[0] + randomn(seed, 1.0) > 0.5
+			start[1] = start[1] + randomn(seed+1., 1.0)/25.0
+			start[2] = start[2] + randomn(seed+2., 1.0)/25.0
+			start[3] = start[3] + randomn(seed+3., 1.0)/5.0
+			start[4] = start[4] + randomn(seed+4., 1.0)/25.0
+			start[5] = start[5] + randomn(seed+5., 1.0)
 		endelse	
 
 		pi[*].value = start
@@ -228,6 +223,7 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 			;oplot, freq_sim, flux_sim, color = 255, thick=4
 
 			;/////////////////////////////////////////////////////////
+			;
 			;			Now introduce Paulo's gyro model 
 			;
 			;----------------------------------------------------;
@@ -261,6 +257,7 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 
 
 			;/////////////////////////////////////////////////////
+			;
 			; 			Use the model to produce a fit
 			;
 			;if i eq 120 then start = [3.4, 6.28, 8.15, 3.1, 3.84, 78.0] else $
@@ -268,20 +265,20 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 
 				;fit = 'paulo_gyro(x, p)'	
 				;p = mpfitexpr(fit, freq*1e6, flux, err, yfit=yfit, start, bestnorm=bestnorm, dof=dof, perror=perror)	
-			weights=1.0/err^2	
+			weights=flux
 
 			p = mpfitfun('paulo_gyro', freq, flux, weights=weights, parinfo=pi, bestnorm=bestnorm, dof=dof, perror=perror, errmsg=errmsg)
 	 
-			gyro, 10^freq_model, flux_model, $
-				bmag=p[0], $
-				nel=10^p[1], $
-				np=10^p[2], $
-				delta=p[3], $	
-				ener=[10., 10^p[4]], $
-				angle=p[5], $
-				anor=anor, $
-				size=300, $
-				hei=2.08e10
+			;gyro, 10^freq_model, flux_model, $
+			;	bmag=p[0], $
+			;	nel=10^p[1], $
+			;	np=10^p[2], $
+			;	delta=p[3], $	
+			;	ener=[10., 10^p[4]], $
+			;	angle=p[5], $
+			;	anor=anor, $
+			;	size=300, $
+			;	hei=2.08e10
 
 			;set_line_color
 			;oplot, (10^freq_model)/1e6, flux_model, thick=2, linestyle=3, color=4
@@ -329,7 +326,7 @@ pro nrh_rstn_flux_spect_gyro_model_montec, postscript=postscript, out_file=out_f
 			eta_finish_secs = secs_per_perc*100.0
 			eta_finish = current_time + eta_finish_secs + 60.0*60.0*2.0 ;For Central European Time
 			eta_finish = anytim(eta_finish, /cc)
-			if k eq 0 then spawn, 'echo Process finish ETA: '+ eta_finish +' Central European Time >> ~/Data/2014_sep_01/radio/gyro_fits/'+progress_file
+			spawn, 'echo Process finish ETA: '+ eta_finish +' Central European Time >> ~/Data/2014_sep_01/radio/gyro_fits/'+progress_file
 
 		endfor
 

@@ -19,7 +19,7 @@ pro aia_c2_nrh_swap_20140901_v2, postscript=postscript
 
 	
 	if keyword_set(postscript) then begin
-		setup_ps, '~/nrh_source_pos0.eps'
+		setup_ps, '~/nrh_source_pos3.eps'
 	endif else begin
 		window, 0, xs=900, ys=900, retain=2
 		!p.charsize=1.5
@@ -57,7 +57,7 @@ pro aia_c2_nrh_swap_20140901_v2, postscript=postscript
 	mreadfits_header, aia_files, ind, only_tags='exptime'
 	f = aia_files[where(ind.exptime gt 1.)]
 
-	tstart = anytim('2014-09-01T11:01:40')
+	tstart = anytim('2014-09-01T11:03:30')
 	tend   = anytim('2014-09-01T11:20:00')
 
 	ratio_step = 5
@@ -150,22 +150,23 @@ pro aia_c2_nrh_swap_20140901_v2, postscript=postscript
 			grid_spacing=15.0
 
 
-		oplot_nrh_on_three_color_20140901, he_aia.date_obs;, /back
-
+		;oplot_nrh_on_three_color_20140901, he_aia.date_obs;, /back
+		set_line_color
 		xyouts, 0.2, 0.82, 'AIA 193A '+anytim(he_aia.date_obs, /cc, /trun)+' UT', /normal, charsize=1.5, color=1 
 		xyouts, 0.2, 0.79, 'SWAP 174A '+anytim(hdr.date_obs, /cc, /trun)+' UT', /normal, charsize=1.5, color=1 
 
+		nrh_src_pos_20140901
 
-
-		if keyword_set(postscript) then device, /close
-		set_plot, 'x'
+		if keyword_set(postscript) then begin
+			device, /close
+		endif else begin	
+			set_plot, 'x'
+		endelse	
 
 		print, 'AIA 193A '+he_aia.date_obs;, /normal, charthick=7.0, charsize=2.5, color=0	
 		print, 'SWAP '+hdr.date_obs;, /normal, charthick=2.0, charsize=2.5
 
-		    	
-STOP	 
-		;nrh_src_pos_20140901
+		STOP    	
 
 	ENDFOR
 

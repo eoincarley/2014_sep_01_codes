@@ -101,45 +101,40 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 	;
 	; 		  Set restrictions.
 	;
-
 	pi[0].step = 1	;Large step sizes in solution space for these params.
-	;pi[1].step = 1
-
 	pi[1].limited(0) = 1
 	pi[1].limits(0) = 5.0
-
+	pi[2].step = 0.5
 	pi[3].step = 1
 	;pi[4].step = 1
 	pi[5].step = 1
 	pi[5].limited(0) = 1
-	pi[5].limits(0) = 10.0	
+	pi[5].limits(0) = 50.0	
 
 	k=0
 	GET_UTC, UTC
 	loop_start_t = anytim(UTC, /utim)
-	;//////////////////////////////////////
-	;
-	;   Monte-Carlo the start values.
-	;
-	GET_UTC, utc_seed
-	seed = anytim(utc_seed, /utim)	; Use the current time as the seed for the random variable
-	;if k eq 0 then begin
-		start = [5.0, alog10(1e6), 8.15, 3.1, 3.84, 80.0] 
-;	endif else begin 
-;		start = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0]
-;		start[0] = start[0] + randomu(seed, 1.0)*5.0 > 0.5
-;		start[1] = start[1] + randomu(seed+1., 1.0)/50.0
-;		start[2] = start[2] + randomu(seed+2., 1.0)/50.0
-;		start[3] = start[3] + randomu(seed+3., 1.0)*2.0
-;		start[4] = start[4] + randomu(seed+4., 1.0)/50.0
-;		start[5] = start[5] + randomu(seed+5., 1.0)
-;	endelse	
 
-	pi[*].value = start
 	started=0
 
 	for i=start_time_index, stop_time_index, tindex_step do begin
+		
 
+		GET_UTC, utc_seed
+		seed = anytim(utc_seed, /utim)	; Use the current time as the seed for the random variable
+		if i eq start_time_index then begin
+			start = [3.5, 6.0, 8.15, 3.1, 3.84, 80.0] ;start = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0] 
+		endif else begin 
+			start = [3.5, 6.0, 8.15, 3.1, 3.84, 80.0] 
+			start[0] = start[0] + randomn(seed, 1.0) > 0.5
+			start[1] = start[1] + randomn(seed+1., 1.0)/25.0
+			start[2] = start[2] + randomn(seed+2., 1.0)/20.0
+			start[3] = start[3] + randomn(seed+3., 1.0)/5.0
+			start[4] = start[4] + randomn(seed+4., 1.0)/25.0
+			start[5] = start[5] + randomn(seed+5., 1.0)
+		endelse	
+
+		pi[*].value = start
 		;/////////////////////////////////////////////////////////////////
 		;					Arrange flux density values
 		;
@@ -260,24 +255,25 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 
 			;fit = 'paulo_gyro(x, p)'	
 			;p = mpfitexpr(fit, freq*1e6, flux, err, yfit=yfit, start, bestnorm=bestnorm, dof=dof, perror=perror)	
+		Emin=10.0	
+		weights=flux
 
-		weights=1.0/err^2
-
-		p = mpfitfun('paulo_gyro', freq, flux, weights=weights, parinfo=pi, bestnorm=bestnorm, dof=dof, perror=perror, errmsg=errmsg)
+		p = mpfitfun('paulo_gyro', freq, flux, weight=weights, parinfo=pi, bestnorm=bestnorm, dof=dof, perror=perror, errmsg=errmsg)
  
 		gyro, 10^freq_model, flux_model, $
 			bmag=p[0], $
 			nel=10^p[1], $
 			np=10^p[2], $
 			delta=p[3], $	
-			ener=[10., 10^p[4]], $
+			ener=[Emin, 10^p[4]], $
 			angle=p[5], $
 			anor=anor, $
 			size=300, $
 			hei=2.08e10
 
+
 		set_line_color
-		oplot, (10^freq_model)/1e6, flux_model, thick=5, linestyle=0, color=5
+		oplot, (10^freq_model)/1e6, flux_model, thick=1, linestyle=0, color=5
 	
 		;p = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0]
 		delta_sym = cggreek('delta')
@@ -291,7 +287,7 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 		xyouts, xpos, ypos-yinc, 'N = '+string(10^p[1], format='(e8.2)')+' cm!U-3!N', /normal
 		xyouts, xpos, ypos-yinc*2.0, 'n!Lth!N = '+string(10^p[2], format='(e8.2)')+' cm!U-3!N', /normal
 		xyouts, xpos, ypos-yinc*3.0, delta_sym+' = '+string(p[3], format='(f4.2)'), /normal
-		xyouts, xpos, ypos-yinc*4.0, 'E!L0!N ='+ string([10], format='(I2)')+' keV', /normal
+		xyouts, xpos, ypos-yinc*4.0, 'E!L0!N ='+ string(Emin, format='(I4)')+' keV', /normal
 		xyouts, xpos, ypos-yinc*5.0, 'E!L1!N = '+ string(10^p[4], format='(I4)')+' keV', /normal
 		xyouts, xpos, ypos-yinc*6.2, 'Angle = '+string(p[5], format='(I2)')+deg_sym, /normal
 		xyouts, xpos, ypos-yinc*7.2, 'Src size = '+string(0.3, format='(f3.1)')+' R!Lsun!N', /normal
@@ -324,12 +320,14 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 			parms = [ [parms], [nrh_time, p]  ]
 			errors = [ [errors], [nrh_time, perror] ]
 		endelse
+
+	stop	
 	if keyword_set(postscript) then begin
 		device, /close
 		;spawn,'open ~/Data/2014_sep_01/radio/'
 		set_plot, 'x'
 	endif	
-	x2png, '~/Data/2014_sep_01/radio/gyro_fits/natural_weight_'+string(i, format='(I03)')+'.png'
+	x2png, '~/Data/2014_sep_01/radio/gyro_fits/poisson_weight_'+string(i, format='(I03)')+'.png'
 	;wait, 1.0	
 	endfor
 

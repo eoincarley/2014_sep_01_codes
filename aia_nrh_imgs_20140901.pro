@@ -3,7 +3,7 @@ pro aia_nrh_imgs_20140901
 	;NRH and AIA composite images for 2014 Sep 01 event
 
 
-	window, xs=700, ys=700, retain = 2
+	window, xs=1000, ys=1000, retain = 2
 	!p.charsize=1.5
 
 	;-------------------------------------------------;

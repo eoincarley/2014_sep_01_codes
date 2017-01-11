@@ -20,17 +20,17 @@ pro plot_gyro_montec_results, postscript=postscript
 	; Plot the results of the Monte Carlo fits to the gyrosynchrotron spectrum
 
 	folder = '~/Data/2014_sep_01/radio/gyro_fits/'
-	file1 = 'gyro_mc_results1N.sav'
-	file2 = 'gyro_mc_results2N.sav'
-	file3 = 'gyro_mc_results3N.sav'
-	file4 = 'gyro_mc_results4N.sav'
+	file1 = 'gyro_mc_results1N2.sav'
+	file2 = 'gyro_mc_results2N2.sav'
+	;file3 = 'gyro_mc_results3N2.sav'
+	file4 = 'gyro_mc_results4N2.sav'
 
 	restore, folder+file1, /verb
 	params_total = PARMS_AVGS
 	restore, folder+file2, /verb
 	params_total = [ [params_total], [PARMS_AVGS] ]
-	restore, folder+file3, /verb
-	params_total = [ [params_total], [PARMS_AVGS] ]
+	;restore, folder+file3, /verb
+	;params_total = [ [params_total], [PARMS_AVGS] ]
 	restore, folder+file4, /verb
 	params_total = [ [params_total], [PARMS_AVGS] ]
 
@@ -43,10 +43,10 @@ pro plot_gyro_montec_results, postscript=postscript
 
 
 	!p.multi=[0, 3, 1]
-	!p.charsize=2.8
+	!p.charsize=1.5
 	set_line_color
-	window, 0, xs=500*(3/1.), ys=500
-	plothist_new, Bfield, bin=0.2, xr=[0.5, 6.0], color=0, $
+	window, 0, xs=300*(3/1.), ys=300
+	plothist_new, Bfield, bin=0.5, xr=[0.5, 10.0], color=0, $
 		xtitle='Magnetic field strength (G)', $
 		ytitle='Number of results'
 
@@ -54,7 +54,7 @@ pro plot_gyro_montec_results, postscript=postscript
 	xyouts, 0.06, 0.87, 'Sdev: '+string(stdev(Bfield), format='(f4.2)')+' G', color=3, /normal, charsize=1.5
 
 	;----------------------------------------------------;
-	plothist_new, Nel, bin=1e5, xr=[1e6, 3e6], color=0, $
+	plothist_new, Nel, bin=1e5, xr=[1e5, 3e6], color=0, $
 		xtitle='Non-thermal electron densitu (cm!U-3!N)', $
 		ytitle='Number of results'
 
@@ -77,7 +77,7 @@ pro plot_gyro_montec_results, postscript=postscript
 
 	;xyouts, 0.76, 0.93, 'Mean: '+string(mean(Np), format='(e8.1)')+' cm!U-3!N', color=3, /normal, charsize=1.5
 	;xyouts, 0.76, 0.91, 'Sdev: '+string(stdev(Np), format='(e8.1)')+' cm!U-3!N', color=3, /normal, charsize=1.5
-	
+STOP	
 	;----------------------------------------------------;	
 	;plothist_new, delta, bin=0.019, xr=[3.0, 3.2], color=0, $
 	;	xtitle='Electron spectral index', $
@@ -113,17 +113,21 @@ pro plot_gyro_montec_results, postscript=postscript
 	if keyword_set(postscript) then setup_ps, '~/Data/2014_sep_01/radio/gyro_fits/gyro_fits_20140901.eps'
 
 	folder = '~/Data/2014_sep_01/radio/gyro_fits/'
-	file1 = 'gyro_mc_results1N.sav'
-	file2 = 'gyro_mc_results2N.sav'
-	file3 = 'gyro_mc_results3N.sav'
-	file4 = 'gyro_mc_results4N.sav'
+	file1 = 'gyro_mc_results1N1.sav'
+	file2 = 'gyro_mc_results2N1.sav'
+	;file3 = 'gyro_mc_results3N1.sav'
+	file4 = 'gyro_mc_results4N1.sav'
 
+
+	;////////////////////////////////////////////
+	;				Plot B-start
+	;
 	restore, folder+file1, /verb
 	params_total = START_VALUES
 	restore, folder+file2, /verb
 	params_total = [ [params_total], [START_VALUES] ]
-	restore, folder+file3, /verb
-	params_total = [ [params_total], [START_VALUES] ]
+	;restore, folder+file3, /verb
+	;params_total = [ [params_total], [START_VALUES] ]
 	restore, folder+file4, /verb
 	params_total = [ [params_total], [START_VALUES] ]
 	params_start=params_total
@@ -138,16 +142,20 @@ pro plot_gyro_montec_results, postscript=postscript
 	!p.multi=[0, 1, 2]
 	!p.charsize=1.2
 	set_line_color
-	;window, 10, xs=500*(1/1.), ys=500*(2/1.), xp=1950, yp=1000
+	window, 10, xs=300*(1/1.), ys=300*(2/1.), xp=1950, yp=1000
 
-	cgHistoplot, B_start, BINSIZE=0.2, xr=[1,6], yr=[0,50], xtitle='B field strength (G)'
+	cgHistoplot, B_start, BINSIZE=0.4, xr=[1,6], yr=[0,50], xtitle='B field strength (G)'
 
+
+	;////////////////////////////////////////////
+	;				Plot B-fit
+	;
 	restore, folder+file1, /verb
 	params_total = PARMS_AVGS
 	restore, folder+file2, /verb
 	params_total = [ [params_total], [PARMS_AVGS] ]
-	restore, folder+file3, /verb
-	params_total = [ [params_total], [PARMS_AVGS] ]
+	;restore, folder+file3, /verb
+	;params_total = [ [params_total], [PARMS_AVGS] ]
 	restore, folder+file4, /verb
 	params_total = [ [params_total], [PARMS_AVGS] ]
 
@@ -159,9 +167,9 @@ pro plot_gyro_montec_results, postscript=postscript
 	angle = params_total[5, *]		; degrees
 
 	set_line_color
-	cgHistoplot, B, BINSIZE=0.2, /oplot, color=5, POLYCOLOR='sky blue'
+	cgHistoplot, B, BINSIZE=0.4, /oplot, color=5, POLYCOLOR='sky blue'
 
-	plot, [1,6], [1, 6], /nodata, $
+	plot, [1, 6], [1, 6], /nodata, $
 		color=0, xtitle='Initial B-field (G)', ytitle='Fit B-field (G)', $
 		/xs, /ys
 
@@ -172,9 +180,28 @@ pro plot_gyro_montec_results, postscript=postscript
 			;xr=[1, 6], $
 			color=5
 
+stop
+	;///////////////////////////////////////////////
+	;///////////////////////////////////////////////
+	;///////////////////////////////////////////////
+	;
 
-	B = B[where(B gt 3.5)]
-	B_start = B_start[where(B gt 3.5)]		
+	window, 11, xs=300*(1/1.), ys=300*(2/1.), xp=1850, yp=1000
+	cgHistoplot, Np_start
+	cgHistoplot, Np, /oplot, POLYCOLOR='sky blue'
+
+	plot, [1e8, 2e8], [1e8, 2e8], /nodata, $
+		color=0, $
+		/xs, /ys
+		
+	oplot, Np, Np_start, $;xtitle='B field start (G)', ytitle='B field fit (G)', $
+			psym=8, $
+			;yr=[2.5, 5.0], $
+			;xr=[1, 6], $
+			color=5	
+
+	;B = B[where(B gt 3.5)]
+	;B_start = B_start[where(B gt 3.5)]		
 
 	if keyword_set(postscript) then begin
 		device, /close

@@ -1,0 +1,2 @@
+nrh_rstn_flux_spect_gyro_model_montec, progress_file='gyro_mc_process_status3.txt', out_file='gyro_mc_results3N2.sav', gyro_code='C'
+exit

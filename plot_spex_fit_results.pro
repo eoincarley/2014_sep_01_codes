@@ -62,11 +62,11 @@ pro plot_spex_fit_results, postscript=postscript
 	e_spec_errs = e_spec_errs[indices]
 
 	utplot, times, e_spec_inds, $
-			yr=[1, 5.5], $
+			yr=[1.5, 4.5], $
 			/ys, $	
 			/xs, $
 			psym=10, $
-			color=0, $
+			color=1, $
 			xtitle='Time (UT)', $
 			ytitle='Non-thermal electron spectral index ('+cgGreek('delta')+')'
 
@@ -79,7 +79,7 @@ pro plot_spex_fit_results, postscript=postscript
 	restore, radio_file, /verb
 
 	e_spec_ind_radio = -1.1*(alpha_thin -1.2)
-	e_spec_ind_errs = -1.1*(-1.0*scaled_errs -1.2)
+	e_spec_ind_errs = sqrt((scaled_errs*1.1)^2.0)
 
 	loadct, 0
 	lower = e_spec_ind_radio - e_spec_ind_errs
@@ -102,7 +102,7 @@ pro plot_spex_fit_results, postscript=postscript
 
 	set_line_color
 	legend, ['X-ray (FERMI GBM), '+ cgGreek('delta') +'!L'+ cgGreek('mu') +', xray!N'+ ' = 3.1'+cgsymbol('+-')+'0.5', $
-			 'Radio (NRH+RSTN), ' + cgGreek('delta') +'!L'+ cgGreek('mu') +', radio!N'+ ' = 3.3'+cgsymbol('+-')+'1.3'], $
+			 'Radio (NRH+RSTN), ' + cgGreek('delta') +'!L'+ cgGreek('mu') +', radio!N'+ ' = 3.2'+cgsymbol('+-')+'0.1'], $
 			color=[0, 5], $
 			linestyle=[0, 0], $
 			box=0, $

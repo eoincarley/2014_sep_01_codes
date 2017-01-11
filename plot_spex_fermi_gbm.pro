@@ -33,11 +33,12 @@ pro plot_spex_fermi_gbm, postscript=postscript
 	;				FEMRI GBM
 	;
 	obj=ospex(/no_gui)
-	obj-> set, $                                                                               
-	spex_specfile= '~/Data/2014_sep_01/fermi/glg_cspec_n5_bn140901462_v00.pha'
+	obj-> set, spex_specfile= '~/Data/2014_sep_01/fermi/glg_cspec_n5_bn140901462_v00.pha'
 	obj-> set, spex_accum_time= [' 1-Sep-2014 10:54:00.000', ' 1-Sep-2014 11:11:00.000']       
 	obj-> set, spex_bk_time_interval=[' 1-Sep-2014 10:54:00.000', ' 1-Sep-2014 10:56:00.000']  
+	;obj->set_file, '~/Data/2014_sep_01/fermi/glg_cspec_n5_bn140901462_v01.rsp', /drm
 	obj-> set, spex_eband= [[4.5000000D, 10.000000D]];, $
+
 	obj->plot, class='spex_bksub', spex_units='flux', color=1, yrange=yr, /ys, xstyle=1, position=pos, title=' ', xtitle='Time (UT)';, xtitle='Time (UT)', title=' '
 	set_line_color
 	obj-> set, spex_eband= [[10.000000D, 15.000000D]]
