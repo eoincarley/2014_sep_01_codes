@@ -1,22 +1,7 @@
-pro setup_ps, name
-  
-   set_plot,'ps'
-   !p.font=0
-   !p.charsize=1.3
-   device, filename = name, $
-          /color, $
-          /helvetica, $
-          /inches, $
-          xsize=6, $
-          ysize=6, $
-          bits_per_pixel=16, $
-          /encapsulate, $
-          yoffset=5
-
-end
-
-
 function paulo_gyro, freqs, params ;Bfield, Del, ener2, Ang
+
+	; Function to send the data to the gyrosynchrotron numerical model 
+	; See Paulo & Simoes (2013) for a description of the numerical model
 	
 	;/////////////////////////////////
 	; These expressions were put here by Eoin Carley. 
