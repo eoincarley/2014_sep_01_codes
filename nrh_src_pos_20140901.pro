@@ -30,7 +30,7 @@ pro nrh_src_pos_20140901, calc_speed=calc_speed
 	endelse	
 	
 	
-	source_prop_files = findfile(nrh_folder+'*src_properties.sav')
+	source_prop_files = findfile(nrh_folder+'*src_properties.sav')	; Created with nrh_choose_centroid.pro
 	image_file = findfile('*.fts')
 	AU = 149e6	;  km
 

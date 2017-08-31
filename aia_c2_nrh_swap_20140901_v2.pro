@@ -57,7 +57,7 @@ pro aia_c2_nrh_swap_20140901_v2, postscript=postscript
 	mreadfits_header, aia_files, ind, only_tags='exptime'
 	f = aia_files[where(ind.exptime gt 1.)]
 
-	tstart = anytim('2014-09-01T11:03:30')
+	tstart = anytim('2014-09-01T11:02:50')
 	tend   = anytim('2014-09-01T11:20:00')
 
 	ratio_step = 5
@@ -148,6 +148,14 @@ pro aia_c2_nrh_swap_20140901_v2, postscript=postscript
 			gthick=1.0, $	
 			gcolor=255, $
 			grid_spacing=15.0
+
+
+		restore,'~/data/2014_sep_01/radio/nrh/dtmaps/nrh_432_arc_dt_map.sav'
+		xarcs = (dt_map_struct.XYARCSEC)[0, *] 
+		yarcs = (dt_map_struct.XYARCSEC)[1, *] 
+		;set_line_color
+		;plots, xarcs[0:999]<(-50), yarcs[0:999]>(-650), /data, color=6, thick=4.5
+		;plots, xarcs[3000:3999]<(-50), yarcs[3000:3999]>(-650), /data, color=6, thick=4.5
 
 
 		;oplot_nrh_on_three_color_20140901, he_aia.date_obs;, /back

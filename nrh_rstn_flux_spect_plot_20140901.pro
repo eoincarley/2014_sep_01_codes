@@ -2,7 +2,7 @@ pro setup_ps, name
   
    set_plot,'ps'
    !p.font=0
-   !p.charsize=1.2
+   !p.charsize=1.3
    device, filename = name, $
           /color, $
           /helvetica, $
@@ -22,10 +22,9 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 	
 	if keyword_set(postscript) then setup_ps, '~/Data/2014_sep_01/radio/nrh_rstn_spectrum_fit_20140901.eps'
 
-	!p.charsize=1.5
 	set_line_color
 	;window, 10, xs=600, ys=600, xpos=1950, ypos=1000, retain=2
-	plot, [1e2, 1e4], [1.0, 4e2], $
+	plot, [1e2, 1e4], [1.0, 1e2], $
 		/ys, $
 		/xs, $
 		/ylog, $
@@ -64,8 +63,8 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 	start_index = 5		; Only choose frequencies > freq[4]
 	freq = [nrh_freq, sh_rstn_freq]
 	freq = freq[start_index:n_elements(freq)-1]
-
-	colors = (findgen(150)*255)/(89.);[0, 50, 240];(findgen(3)*255)/(2.)
+ 
+	colors = (indgen(150)*255)/(149.) ;[75, 20, 240];(findgen(3)*255)/(2.)
 	colors_index = 0
 
 	for i=0, n_elements(nrh_times)-1 do begin
@@ -89,7 +88,7 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 		sh_rstn_errs = sh_rstn_flux*0.2
 
 
-	    rstn_fluxes = [sh_rstn_flux[0], $
+	    rstn_fluxes = [sh_rstn_flux[0] , $
 					   mean( [sh_rstn_flux[1], sv_rstn_flux[0]] ), $	; Could use an average of the SV and SH sites, but SH background is highly variable.
 					   mean( [sh_rstn_flux[2], sv_rstn_flux[1]] ), $	; SV is more reliable.
 					   mean( [sh_rstn_flux[3], sv_rstn_flux[2]] ) ]
@@ -119,7 +118,8 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 			;pi(3).limited(0) = 1
 			;pi(3).limits(0) = 2.0
 
-
+			err[4] = err[4] + 13.0
+			err[5] = err[5] + 6.0
 			p = mpfitexpr(fit, freq, flux, err, yfit=yfit, start, bestnorm=bestnorm, dof=dof, perror=perror)	
 
 			freq_sim = 10^interpol(alog10([327,4995]), 100) ;(findgen(100)*(freq[n_elements(freq)-1] - freq[0])/99.) + freq[0]
@@ -130,39 +130,26 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 			if nrh_time gt anytim('2014-09-01T11:01:40', /utim)	and nrh_time lt anytim('2014-09-01T11:03:10', /utim) then begin
 
 			;if nrh_time eq anytim('2014-09-01T11:01:40.040', /utim) or $
-			;   nrh_time eq anytim('2014-09-01T11:02:20.540', /utim) or $
-			;   nrh_time eq anytim('2014-09-01T11:02:55.640', /utim) then begin
+			 ;  nrh_time eq anytim('2014-09-01T11:02:20.540', /utim) or $
+			  ; nrh_time eq anytim('2014-09-01T11:02:55.640', /utim) then begin
 					print, anytim(nrh_time, /cc)
 
-					loadct, 74, /silent
 					PLOTSYM, 0
-					;if started eq 0 then $
-					;plot, freq, flux, $
-					;	/ys, $
-					;	/xs, $
-					;	/ylog, $
-					;	/xlog, $
-					;	psym=8, $
-					;	yr = [1.0, 4e2], $
-					;	xr=[1e2, 1e4], $
-					;	xtitle=' ', $
-					;	ytitle=' ', $
-					;	/noerase $
-					;else 
-					oplot, freq, flux, psym=8, color = colors[colors_index]
-
+					
 					loadct, 74, /silent
-					;oplot, freq, flux, linestyle=2, color = colors[colors_index], thick=4
-
-					oploterror, freq, flux, err, psym=8
-					;
+					oplot, freq, flux, psym=8, color = colors[colors_index]
+					;xyouts, freq[0]-20.0, flux[0], anytim(nrh_time, /cc, /time_only, /trun)+' UT', /data, $
+					;	alignment=1.0, color=colors[colors_index], $
+					;	charsize=1.0
+					
+					oploterror, freq, flux, err, psym=8, color=0, /hibar, /nohat
+					oploterror, freq, flux, err, psym=8, color=0, /lobar, /nohat
+					
 					oplot, freq_sim, flux_sim, color = colors[colors_index], thick=4
 
 					;print, flux[n_elements(flux)-1]
-
 					;print, 'alpha_thick is: '+string(p[2], format='(f4.2)')+' +/- '+string(perror[2], format='(f4.2)')
 					;print, 'alpha_thin is: '+string(p[3], format='(f5.2)')+' +/- '+string(perror[3], format='(f5.2)')
-
 					;perror = perror*SQRT(bestnorm / dof) 
 
 					if started eq 0 then begin
@@ -188,11 +175,11 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 
 					started = 1
 					colors_index = colors_index+1
-	
+			
 			endif	
 
-
 	endfor
+
 	;window, 20, xs=600, ys=600
 	;plothist_new, alpha_thick, /auto, color=4
 	;---------------------------------------------------------------------;
@@ -208,19 +195,18 @@ pro nrh_rstn_flux_spect_plot_20140901, postscript=postscript
 	print, 'Weighted: '+string(athick_wmean)+' +/- '+string(sqrt(athick_werr))
 	print, 'Weighted: '+string(athin_wmean)+' +/- '+string(sqrt(athin_werr))
 
-
-
-
 	print, string(mean(alpha_thick))+' +/- '+string(mean(alpha_thick_err))
 	print, string(mean(alpha_thin))+' +/- '+string(mean(alpha_thin_err))
-
-	scaled_errs = alpha_thin_err
-	save, alpha_thin, scaled_errs, alpha_thin_times, filename='/Users/eoincarley/data/2014_sep_01/fermi/e_spec_index_radio.sav'
+	
 	if keyword_set(postscript) then begin
 		device, /close
 		spawn,'open ~/Data/2014_sep_01/radio/'
 		set_plot, 'x'
 	endif	
+
+	scaled_errs = alpha_thin_err
+	save, alpha_thin, scaled_errs, alpha_thin_times, filename='~/data/2014_sep_01/fermi/e_spec_index_radio.sav'
+	
 STOP
 
 END	

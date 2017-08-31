@@ -5,9 +5,9 @@ pro decay_time
 
 	v = findgen(100)*(0.9-0.1)/99.0 + 0.1
 	E = v
-	for i=0, n_elements(E)-1 do E[i] = (rel_energy(v[i]))[0]
+	for i=0, n_elements(E)-1 do E[i] = (rel_energy(v[i]))[1]
 
-	t = (1e17*E^2.0)/(1.58e8*v*2.98e10)
+	t = (1e17*E^2.0)/(1.7e8*v*2.98e10)
 
 	window, 0, xs=600, ys=600
 	plot, v, t/60.0, $

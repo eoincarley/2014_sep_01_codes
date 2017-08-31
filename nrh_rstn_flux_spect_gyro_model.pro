@@ -27,6 +27,13 @@ function paulo_gyro, freqs, params ;Bfield, Del, ener2, Ang
 	;energy[1] = 10^energy[1]
 	;angle=angle*10.0
 	;/////////////////////////////////
+	COMMON source_dims, size_arcsec, height_cm, Emin
+
+	rsun = 6.9e10	    ; cm
+	Lradio = 0.45*rsun
+	size_arcsec = Lradio/727e5 
+	height_cm = Lradio
+	Emin=10.0	
 
 	f = 10^freqs
 	gyro, f, flux_model, $
@@ -34,11 +41,11 @@ function paulo_gyro, freqs, params ;Bfield, Del, ener2, Ang
 			nel=10^params[1], $
 			np=10^params[2], $
 			delta=params[3], $	
-			ener=[10., 10^params[4]], $
+			ener=[Emin, 10^params[4]], $
 			angle=params[5], $
 			anor=7.8e30, $
-			size=300, $
-			hei=2.08e10
+			size=size_arcsec, $
+			hei=height_cm
 
 	return, alog10(flux_model)
 
@@ -46,11 +53,21 @@ END
 
 pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 
-	; Apapdted fromt nrh_rstn_flux_spect_plot_20140901.pro
+	; Adapdted fromt nrh_rstn_flux_spect_plot_20140901.pro
 
+	COMMON source_dims	; To pass to function above.
+
+	cd,'~/idl/gyro/'
 	!p.charsize=1.5
-	;loadct, 39
 	window, 10, xs=600, ys=600, xpos=1950, ypos=1000, retain=2
+
+	anor=7.8966100e+30
+	freq_model=10^interpol(alog10( [0.01, 20]*1e9), 50)
+
+
+	;-----------------------------------------;
+	;		Read and sort out the data
+	;	
 	restore, '~/Data/2014_sep_01/radio/rstn_flux_sh_20140901.sav', /verb	
 	restore, '~/Data/2014_sep_01/radio/nrh_rstn_flux_20140901.sav', /verb
 	restore,'~/Data/2014_sep_01/radio/nrh/clean_wresid/nrh_residual_errors.sav', /verb
@@ -58,7 +75,6 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 	stdevs = transpose(resid_errs[1, *, *])	; Standard deviation of the residuals (%) calculated in nrh_residual_errors.pro
 											; Generally, during our period of interest (11:02-11:05 UT) the residuals are
 											; within 1 standard deviation of the smoothed profile
-	started=0
 
 	nrh_times = nrh_rstn_flux.nrh_times
 	nrh_fluxes = nrh_rstn_flux.nrh_flux
@@ -75,47 +91,38 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 	start_index = 5		; Only choose frequencies > freq[4]
 	freq = [nrh_freq, sh_rstn_freq]
 	freq = freq[start_index:n_elements(freq)-1]
-
 	freq = alog10(freq*1e6)
-
-	colors = (findgen(150)*255)/(89.);[0, 50, 240];(findgen(3)*255)/(2.)
-	colors_index = 0
 
 	if keyword_set(postscript) then setup_ps, '~/Data/2014_sep_01/radio/gyro_fits/nrh_rstn_spectrum_gyro_model_20140901.eps'
 
-	anor=7.8966100e+30
-	freq_model=10^interpol(alog10([0.01,20]*1e9),50)
-	freq_model = alog10(freq_model)
-	rsun = 6.9e10	    ; cm
-	Lradio = 0.3*rsun
-	cd,'~/idl/gyro/'
-
-	start_time_index = closest(nrh_times, anytim('2014-09-01T11:01:50', /utim))
-	stop_time_index = closest(nrh_times, anytim('2014-09-01T11:03:10', /utim))
-	tindex_step = 1.
-
+	;//////////////////////////////////////////////////////
+	;
+	;    Setup params for fit structure. Set restrictions.
+	;
 	pi = replicate({value:0.D, step:0.D, fixed:0, limited:[0,0], $
 		                      limits:[0.D,0]}, 6)	
 
-	;//////////////////////////////////////
-	;
-	; 		  Set restrictions.
-	;
 	pi[0].step = 1	;Large step sizes in solution space for these params.
 	pi[1].limited(0) = 1
-	pi[1].limits(0) = 5.0
+	pi[1].limits(0) = 6.0
+	pi[1].step = 0.1
 	pi[2].step = 0.5
 	pi[3].step = 1
 	;pi[4].step = 1
 	pi[5].step = 1
 	pi[5].limited(0) = 1
-	pi[5].limits(0) = 50.0	
+	pi[5].limits(0) = 10.0	
 
+	; Params for loop
 	k=0
+	started=0
 	GET_UTC, UTC
 	loop_start_t = anytim(UTC, /utim)
-
-	started=0
+	colors = (findgen(150)*255)/(89.);[0, 50, 240];(findgen(3)*255)/(2.)
+	colors_index = 0
+	start_time_index = closest(nrh_times, anytim('2014-09-01T11:02:00', /utim))
+	stop_time_index = closest(nrh_times, anytim('2014-09-01T11:03:10', /utim))
+	tindex_step = 1.
 
 	for i=start_time_index, stop_time_index, tindex_step do begin
 		
@@ -123,9 +130,9 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 		GET_UTC, utc_seed
 		seed = anytim(utc_seed, /utim)	; Use the current time as the seed for the random variable
 		if i eq start_time_index then begin
-			start = [3.5, 6.0, 8.15, 3.1, 3.84, 80.0] ;start = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0] 
+			start = [5.3, 7.5, 8.0, 3.6, 3.9, 20.0] ;start = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0] 
 		endif else begin 
-			start = [3.5, 6.0, 8.15, 3.1, 3.84, 80.0] 
+			start = [5.3, 7.5, 8.0, 3.6, 3.9, 20.0]
 			start[0] = start[0] + randomn(seed, 1.0) > 0.5
 			start[1] = start[1] + randomn(seed+1., 1.0)/25.0
 			start[2] = start[2] + randomn(seed+2., 1.0)/20.0
@@ -169,6 +176,10 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 		flux = flux[start_index:n_elements(flux)-1]
 		err = err[start_index:n_elements(err)-1]
 
+		; Use next three lines to fit/plot the average spectrum
+		restore, '~/Data/2014_sep_01/radio/mean_flux_density_sectrum.sav'
+		flux = 10^flux_mean
+		err = 10^flux_err_mean 
 		; Work in log space
 
 		set_line_color
@@ -189,10 +200,24 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 			color=1 ;$
 
 
+		;gyro, freq_model, flux_model, $
+		;	bmag=start[0], $
+		;	nel=10^start[1], $
+		;	np=10^start[2], $
+		;	delta=start[3], $	
+		;	ener=[Emin, 10^start[4]], $
+		;	angle=start[5], $
+		;	anor=anor, $
+		;	size=size_arcsec, $
+		;	hei=height_cm	
+
+
+		;oplot, freq_model/1e6, flux_model, thick=4, linestyle=0, color=5	
+
+		;stop
 		;else oplot, freq, flux, psym=8, color = 255;colors[colors_index]
 
 		oploterror, 10^freq/1e6, flux, err, psym=8, color=1
-
 		;-----------------------------------------------------------------;
 		;			Switch to working with logged values so 
 		;			fitting routines don't have to work with
@@ -255,43 +280,58 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 
 			;fit = 'paulo_gyro(x, p)'	
 			;p = mpfitexpr(fit, freq*1e6, flux, err, yfit=yfit, start, bestnorm=bestnorm, dof=dof, perror=perror)	
-		Emin=10.0	
 		weights=flux
 
-		p = mpfitfun('paulo_gyro', freq, flux, weight=weights, parinfo=pi, bestnorm=bestnorm, dof=dof, perror=perror, errmsg=errmsg)
+		;p = mpfitfun('paulo_gyro', freq, flux, weight=weights, parinfo=pi, bestnorm=bestnorm, dof=dof, perror=perror, errmsg=errmsg)
  
-		gyro, 10^freq_model, flux_model, $
-			bmag=p[0], $
-			nel=10^p[1], $
-			np=10^p[2], $
-			delta=p[3], $	
-			ener=[Emin, 10^p[4]], $
-			angle=p[5], $
+		;gyro, freq_model, flux_model, $
+		;	bmag=p[0], $
+		;	nel=10^p[1], $
+		;	np=10^p[2], $
+		;	delta=p[3], $	
+		;	ener=[Emin, 10^p[4]], $
+		;	angle=p[5], $
+		;	anor=anor, $
+		;	size=size_arcsec, $
+		;	hei=height_cm
+
+		;///////////
+		; These are the average values from the Monte Carlo analysis.
+		gyro, freq_model, flux_model, $
+			bmag=2.9, $
+			nel=2.8e7, $
+			np=1.0e8, $
+			delta=3.6, $	
+			ener=[10.0, 7000.0], $
+			angle=45.0, $
 			anor=anor, $
-			size=300, $
-			hei=2.08e10
+			size=size_arcsec, $
+			hei=height_cm
 
 
 		set_line_color
-		oplot, (10^freq_model)/1e6, flux_model, thick=1, linestyle=0, color=5
-	
-		;p = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0]
+		oplot, freq_model/1e6, flux_model, thick=4, linestyle=0, color=5
+	stop	
 		delta_sym = cggreek('delta')
 		deg_sym = cgsymbol('deg')
 		sun_sym = cgsymbol('sun')
+
+		;p = [3.0, 6.28, 8.15, 3.1, 3.84, 78.0]
 		loadct, 0
-		xpos=0.65
+		charcol=0
+		xpos=0.67
 		ypos=0.90
 		yinc = 0.035
-		xyouts, xpos, ypos, 'B = '+string(p[0], format='(f5.2)')+' G', /normal
-		xyouts, xpos, ypos-yinc, 'N = '+string(10^p[1], format='(e8.2)')+' cm!U-3!N', /normal
-		xyouts, xpos, ypos-yinc*2.0, 'n!Lth!N = '+string(10^p[2], format='(e8.2)')+' cm!U-3!N', /normal
-		xyouts, xpos, ypos-yinc*3.0, delta_sym+' = '+string(p[3], format='(f4.2)'), /normal
-		xyouts, xpos, ypos-yinc*4.0, 'E!L0!N ='+ string(Emin, format='(I4)')+' keV', /normal
-		xyouts, xpos, ypos-yinc*5.0, 'E!L1!N = '+ string(10^p[4], format='(I4)')+' keV', /normal
-		xyouts, xpos, ypos-yinc*6.2, 'Angle = '+string(p[5], format='(I2)')+deg_sym, /normal
-		xyouts, xpos, ypos-yinc*7.2, 'Src size = '+string(0.3, format='(f3.1)')+' R!Lsun!N', /normal
-		xyouts, xpos, ypos-yinc*8.5, 'Src depth = '+string(0.3, format='(f3.1)')+' R!Lsun!N', /normal
+		!p.charsize=1.1
+		xyouts, xpos, ypos, 'B = '+string(6.5, format='(f5.2)')+' G', /normal, color=charcol
+		xyouts, xpos, ypos-yinc, 'N = '+string(2.1e7, format='(e8.2)')+' cm!U-3!N', /normal, color=charcol
+		xyouts, xpos, ypos-yinc*2.0, 'n!Lth!N = '+string(1.1e8, format='(e8.2)')+' cm!U-3!N', /normal, color=charcol
+		xyouts, xpos, ypos-yinc*3.0, delta_sym+' = '+string(3.6, format='(f4.2)'), /normal, color=charcol
+		xyouts, xpos, ypos-yinc*4.0, 'E!L0!N ='+ string(Emin, format='(I4)')+' keV', /normal, color=charcol
+		xyouts, xpos, ypos-yinc*5.0, 'E!L1!N = '+ string(7956, format='(I4)')+' keV', /normal, color=charcol
+		xyouts, xpos, ypos-yinc*6.2, 'Angle = '+string(18., format='(I2)')+deg_sym, /normal, color=charcol
+		xyouts, xpos, ypos-yinc*7.2, 'Src size = '+string(0.5, format='(f3.1)')+' R!Lsun!N', /normal, color=charcol
+		xyouts, xpos, ypos-yinc*8.5, 'Src depth = '+string(0.5, format='(f3.1)')+' R!Lsun!N', /normal, color=charcol
 
 
 		;legend, ['B='+string(p[0], format='(f4.2)')+' G', $
@@ -310,7 +350,7 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 		;		 charsize=1.0
 
 		;////////////////////////////////////////////////////////
-
+stop
 
 		if started eq 0 then begin
 			parms = [ nrh_time, p ]
@@ -321,12 +361,13 @@ pro nrh_rstn_flux_spect_gyro_model, postscript=postscript
 			errors = [ [errors], [nrh_time, perror] ]
 		endelse
 
-	stop	
+
 	if keyword_set(postscript) then begin
 		device, /close
 		;spawn,'open ~/Data/2014_sep_01/radio/'
 		set_plot, 'x'
 	endif	
+	stop
 	x2png, '~/Data/2014_sep_01/radio/gyro_fits/poisson_weight_'+string(i, format='(I03)')+'.png'
 	;wait, 1.0	
 	endfor

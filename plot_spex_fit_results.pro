@@ -34,7 +34,7 @@ pro plot_spex_fit_results, postscript=postscript
 
 
 	;-------------------------------------------;
-	;		e spectral index from radio
+	;		e spectral index from xray
 	;
 	results_txt_file = '/Users/eoincarley/data/2014_sep_01/fermi/opsex_fit_results.txt'
 	readcol, results_txt_file, param, junk, result, errs
@@ -45,9 +45,9 @@ pro plot_spex_fit_results, postscript=postscript
 	times = dindgen(90)*delt + time0
 
 
-	time_start = anytim('1-Sep-2014 10:59:30.000', /utime)
+	time_start = anytim('1-Sep-2014 11:01:00.000', /utime)
 	time_stop = anytim('1-Sep-2014 11:03:30.000', /utime)
-	indices = where(times gt time_start and times lt time_stop)
+	indices = where(times lt time_stop	);times gt time_start and times lt time_stop)
 
 	times = times[indices]
 	e_spec_inds = e_spec_inds[indices]
@@ -100,9 +100,15 @@ pro plot_spex_fit_results, postscript=postscript
 	outplot, times, e_spec_inds, psym=10, thick=4	
 	oploterror, times, e_spec_inds, e_spec_errs, psym=1, color=100, thick=4;, /nohat
 
+	hbar_y = interpol([1.5, 4.5], 100)
+	hbar_x0 = time_start
+	hbar_x1 = anytim('1-Sep-2014 11:03:30.000', /utim)
+	plots, [hbar_x0, hbar_x0], [1.5, 4.5], linestyle=2, color=100
+	;plots, [hbar_x1, hbar_x1], [1.5, 4.5], linestyle=2, color=100
+
 	set_line_color
-	legend, ['X-ray (FERMI GBM), '+ cgGreek('delta') +'!L'+ cgGreek('mu') +', xray!N'+ ' = 3.1'+cgsymbol('+-')+'0.5', $
-			 'Radio (NRH+RSTN), ' + cgGreek('delta') +'!L'+ cgGreek('mu') +', radio!N'+ ' = 3.2'+cgsymbol('+-')+'0.1'], $
+	legend, ['X-ray (FERMI GBM), '+ cgGreek('delta') +'!Lxray!N'+ ' = 2.9'+cgsymbol('+-')+'0.5', $
+			 'Radio (NRH+RSTN), ' + cgGreek('delta') +'!Lradio!N'+ ' = 3.2'+cgsymbol('+-')+'0.3'], $
 			color=[0, 5], $
 			linestyle=[0, 0], $
 			box=0, $

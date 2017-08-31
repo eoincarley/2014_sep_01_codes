@@ -26,7 +26,7 @@ END
 pro nrh_source_size_20140901
 
 	nrh_folder = '~/Data/2014_sep_01/radio/nrh/clean_wresid/'	; Different date but it's just for getting cdelt from the header
-	nrh_files = findfile(nrh_folder+'*src_properties.sav') 
+	nrh_files = findfile(nrh_folder+'*src_properties.sav') 		; Created with nrh_choose_centroid.pro
 
 	freq_index=5
 	restore, nrh_files[freq_index], /verb
@@ -35,9 +35,9 @@ pro nrh_source_size_20140901
 	x = dindgen(100)
 	y = dindgen(100)
 
-	cd,'~/Data/2014_apr_18/radio/nrh/'
+	cd, nrh_folder
 		filenames = findfile('*.fts')
-		tstart = anytim(file2time('20140418_125000'), /utim)
+		tstart = anytim(file2time('20140901_110000'), /utim)
 		t0str = anytim(tstart, /yoh, /trun, /time_only)
 
 		read_nrh, filenames[freq_index], $
@@ -45,14 +45,24 @@ pro nrh_source_size_20140901
 			nrh_data, $
 			hbeg=t0str	
 
-	for i=0, n_elements(times)-1 do begin
-		params = XY_ARCS_STRUCT.gauss_params[*, i]
-		result = 2.354*max(abs([params[2], params[3]]))	;abs(test_my2Dgauss(x, y, params))
 
+	time0 = anytim(file2time('20140901_110130'), /utim)	;anytim(file2time('20140418_125000'), /utim)	;anytim(file2time('20140418_125546'), /utim)	;anytim(file2time('20140418_125310'), /utim)
+	time1 =  anytim(file2time('20140901_110310'), /utim)		
+	times = anytim(XY_ARCS_STRUCT.times , /utim)	
+	indices = where(times gt time0 and times lt time1)	
+	times = times[indices]
+	gauss_params = XY_ARCS_STRUCT.gauss_params[*, indices]
+
+	for i=0, n_elements(times)-1 do begin
+		params = gauss_params[*, i]
+		;if i eq 20 then stop
+		resultx = 2.354*params[2] 
+		resulty = 2.354*params[3]	;abs(test_my2Dgauss(x, y, params))
+		result = sqrt(resultx^2.0 + resulty^2.0)
 
 		source_size = result*nrh_hdr.cdelt1 	;arc_sec nrh_hdr.cdelt1
 		source_size_rsun = (source_size*727.0)/6.95e5
-		print, source_size_rsun
+		;print, source_size_rsun
 		if i eq 0 then sizes = source_size_rsun else sizes = [sizes, source_size_rsun]
 
 	endfor
@@ -63,7 +73,7 @@ pro nrh_source_size_20140901
 
 	utplot, times, smooth(sizes, 10), ytitle='Source size (Rsun)', yr=[0.1, 1.5]
 
-	print, 'Mean source size:' +string(max(sizes))
+	print, 'Mean source size at '+string(nrh_hdr.freq)+':' +string(mean(sizes[where(sizes gt 0.0)]))+' Rsun'
 
 	STOP
 

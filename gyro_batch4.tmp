@@ -1,2 +1,2 @@
-nrh_rstn_flux_spect_gyro_model_montec, progress_file='gyro_mc_process_status4.txt', out_file='gyro_mc_results4N2.sav', gyro_code='D'
+nrh_rstn_flux_spect_gyro_model_montec_v2, progress_file='gyro_mc_process_status4.txt', out_file='gyro_mc_results4_U2_test.sav', gyro_code='D'
 exit

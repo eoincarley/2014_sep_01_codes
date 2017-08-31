@@ -62,7 +62,7 @@ pro rstn_flux_density_20140901, postscrip=postscript
 			color=6, $
 			ytitle='Flux density (SFU)', $
 			pos=pos
-			
+		
 	outplot, rstn_time, freq_2695, color=7, thick=4				
 	outplot, rstn_time, freq_4995, color=4, thick=4		
 	outplot, [rstn_time[0], rstn_time[n_elements(rstn_time)-1]], [0, 0], color=1, thick=1, linestyle=2			
@@ -74,9 +74,8 @@ pro rstn_flux_density_20140901, postscrip=postscript
 
 	;-----------------------------------------------;
 	;
-	;			    No do Sag Hill
+	;			    Now do Sag Hill
 	;	
-
 	rstn_folder = '~/Data/2014_sep_01/radio/rstn/'
 	rstn_file = findfile(rstn_folder+'*sag-hill*.sav')
 	restore, rstn_file[0], /verb
@@ -87,7 +86,7 @@ pro rstn_flux_density_20140901, postscrip=postscript
 	freq_610 = freq_610[where(rstn_times ge time0 and rstn_times le time1)]
 	rstn_times = rstn_times[where(rstn_times ge time0 and rstn_times le time1)]
 
-	smoothing = 10
+	smoothing = 2
 	freq_610 = smooth(freq_610, smoothing, /edge_mirror)
 	outplot, rstn_times, freq_610, color=9, thick=5, linestyle=2		
 

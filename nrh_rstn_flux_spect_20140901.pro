@@ -51,7 +51,7 @@ pro nrh_rstn_flux_spect_20140901
 	;freq_2695 = freq_2695 + abs(mean(freq_2695[0:150]))		; pre-event values sit at zero. No longer applied. Chose better background
 	;freq_4995 = freq_4995 + abs(mean(freq_4995[0:150]))		; values, closer to the event.
 
-	smoothing = 10
+	smoothing = 20
 	freq_1415 = smooth(freq_1415, smoothing, /edge_mirror)
 	freq_2695 = smooth(freq_2695, smoothing, /edge_mirror)
 	freq_4995 = smooth(freq_4995, smoothing, /edge_mirror)
